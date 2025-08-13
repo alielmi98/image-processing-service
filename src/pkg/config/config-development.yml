@@ -1,0 +1,30 @@
+server:
+  internalPort: 5005
+  externalPort: 5005
+  runMode: debug
+  domain: localhost
+cors:
+  allowOrigins: "*"
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: admin
+  dbName: image_db 
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+password:
+  includeChars: true
+  includeDigits: true
+  minLength: 6
+  maxLength: 64
+  includeUppercase: true
+  includeLowercase: true
+jwt:
+  secret: "mySecretKey"
+  refreshSecret: "mySecretKey"
+  accessTokenExpireDuration: 1440
+  refreshTokenExpireDuration: 1440
+

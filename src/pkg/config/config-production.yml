@@ -1,0 +1,41 @@
+server:
+  internalPort: 5010
+  externalPort: 5010
+  runMode: release
+  domain: localhost
+cors:
+  allowOrigins: "*"
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: admin
+  dbName: image_db 
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+password:
+  includeChars: true
+  includeDigits: true
+  minLength: 6
+  maxLength: 64
+  includeUppercase: true
+  includeLowercase: true
+
+jwt:
+  secret: "mySecretKey"
+  refreshSecret: "mySecretKey"
+  accessTokenExpireDuration: 60
+  refreshTokenExpireDuration: 1440
+
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: admin
+  password: password
+  vhost: /
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
