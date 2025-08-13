@@ -1,0 +1,46 @@
+
+version: "3.7"
+
+services:
+
+  ############### will be implemented later backend service ################
+  ####################### POSTGRES #######################
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: image_db 
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - webapi_network
+    restart: unless-stopped
+
+
+ ####################### RabbitMq #######################
+  rabbitmq:
+   image: rabbitmq:management
+   container_name: rabbitmq
+   environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+   ports:
+     - "15672:15672"
+     - "5672:5672"
+   networks:
+     - webapi_network
+   restart: unless-stopped
+
+####################### VOLUME AND NETWORKS #######################
+volumes:
+  postgres:
+  rabbitmq:
+
+networks:
+  webapi_network:
+    driver: bridge
