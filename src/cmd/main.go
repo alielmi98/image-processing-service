@@ -6,6 +6,7 @@ import (
 
 	"github.com/alielmi98/image-processing-service/constants"
 	"github.com/alielmi98/image-processing-service/docs"
+	authRouter "github.com/alielmi98/image-processing-service/internal/auth/api/routers"
 	"github.com/alielmi98/image-processing-service/internal/middlewares"
 	"github.com/alielmi98/image-processing-service/pkg/config"
 	"github.com/alielmi98/image-processing-service/pkg/db"
@@ -42,8 +43,17 @@ func InitServer(cfg *config.Config) {
 }
 
 func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
+	api := r.Group("/api")
+
+	v1 := api.Group("/v1")
+	{
+		//Auth
+		auth := v1.Group("/auth")
+		authRouter.Auth(auth, cfg)
+	}
 
 }
+
 func RegisterSwagger(r *gin.Engine, cfg *config.Config) {
 	docs.SwaggerInfo.Title = "golang web api"
 	docs.SwaggerInfo.Description = "This is a sample server for golang web api"
