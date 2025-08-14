@@ -125,6 +125,6 @@ func getConfigPath(env string) string {
 	} else if env == "production" {
 		return "/app/pkg/config/config-production"
 	} else {
-		return "../../pkg/config/config-development"
+		return "../pkg/config/config-development"
 	}
 }

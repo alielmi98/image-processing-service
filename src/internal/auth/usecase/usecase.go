@@ -32,7 +32,7 @@ func NewUserUsecase(cfg *config.Config, repository repository.UserRepository, to
 
 // Register by username
 func (s *UserUsecase) RegisterByUsername(ctx context.Context, req *dto.RegisterUserByUsernameRequest) error {
-	u := &model.User{
+	u := model.User{
 		Username:  req.Username,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
@@ -56,7 +56,7 @@ func (s *UserUsecase) RegisterByUsername(ctx context.Context, req *dto.RegisterU
 	req.Password = string(hp)
 	u.Password = req.Password
 
-	err = s.repo.Create(ctx, u)
+	_, err = s.repo.CreateUser(ctx, u)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (s *UserUsecase) RegisterByUsername(ctx context.Context, req *dto.RegisterU
 }
 
 func (s *UserUsecase) LoginByUsername(ctx context.Context, req *dto.LoginByUsernameRequest) (*dto.TokenDetail, error) {
-	user, err := s.repo.FindByUsername(ctx, req.Username)
+	user, err := s.repo.FetchUserInfo(ctx, req.Username, req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +74,7 @@ func (s *UserUsecase) LoginByUsername(ctx context.Context, req *dto.LoginByUsern
 		return nil, &service_errors.ServiceError{EndUserMessage: service_errors.UsernameOrPasswordInvalid}
 	}
 
-	tdto := entity.TokenPayload{UserId: user.Id, FirstName: user.FirstName, LastName: user.LastName,
-		Username: user.Username, Email: user.Email, MobileNumber: user.MobileNumber}
-
-	token, err := s.token.GenerateToken(&tdto)
+	token, err := s.generateToken(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -91,4 +88,21 @@ func (s *UserUsecase) RefreshToken(refreshToken string) (*dto.TokenDetail, error
 	}
 
 	return tokenDetail, nil
+}
+
+func (s *UserUsecase) generateToken(user *model.User) (*dto.TokenDetail, error) {
+	tokenDto := entity.TokenPayload{UserId: user.Id, FirstName: user.FirstName, LastName: user.LastName,
+		Email: user.Email, MobileNumber: user.MobileNumber}
+
+	if len(*user.UserRoles) > 0 {
+		for _, ur := range *user.UserRoles {
+			tokenDto.Roles = append(tokenDto.Roles, ur.Role.Name)
+		}
+	}
+
+	token, err := s.token.GenerateToken(&tokenDto)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }

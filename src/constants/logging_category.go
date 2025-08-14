@@ -20,12 +20,13 @@ const (
 	ExternalService SubCategory = "ExternalService"
 
 	// Postgres
-	Migration SubCategory = "Migration"
-	Select    SubCategory = "Select"
-	Rollback  SubCategory = "Rollback"
-	Update    SubCategory = "Update"
-	Delete    SubCategory = "Delete"
-	Insert    SubCategory = "Insert"
+	Migration           SubCategory = "Migration"
+	Select              SubCategory = "Select"
+	Rollback            SubCategory = "Rollback"
+	Update              SubCategory = "Update"
+	Delete              SubCategory = "Delete"
+	Insert              SubCategory = "Insert"
+	DefaultRoleNotFound string      = "default role not found"
 
 	// Internal
 	Api          SubCategory = "Api"

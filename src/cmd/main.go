@@ -8,6 +8,7 @@ import (
 	"github.com/alielmi98/image-processing-service/docs"
 	authRouter "github.com/alielmi98/image-processing-service/internal/auth/api/routers"
 	"github.com/alielmi98/image-processing-service/internal/middlewares"
+	migration "github.com/alielmi98/image-processing-service/migrations"
 	"github.com/alielmi98/image-processing-service/pkg/config"
 	"github.com/alielmi98/image-processing-service/pkg/db"
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("caller:%s  Level:%s  Msg:%s", constants.Postgres, constants.Startup, err.Error())
 	}
+
+	// Migrate the database
+	migration.Up1()
 
 	InitServer(cfg)
 

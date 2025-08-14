@@ -1,0 +1,167 @@
+definitions:
+  github_com_alielmi98_image-processing-service_internal_auth_api_dto.LoginByUsernameRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      username:
+        minLength: 5
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  github_com_alielmi98_image-processing-service_internal_auth_api_dto.RegisterUserByUsernameRequest:
+    properties:
+      email:
+        minLength: 6
+        type: string
+      firstName:
+        minLength: 3
+        type: string
+      lastName:
+        minLength: 6
+        type: string
+      password:
+        minLength: 6
+        type: string
+      username:
+        minLength: 5
+        type: string
+    required:
+    - firstName
+    - lastName
+    - password
+    - username
+    type: object
+  github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse:
+    properties:
+      error: {}
+      result: {}
+      resultCode:
+        $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.ResultCode'
+      success:
+        type: boolean
+    type: object
+  github_com_alielmi98_image-processing-service_pkg_helper.ResultCode:
+    enum:
+    - 0
+    - 40001
+    - 40101
+    - 40301
+    - 40401
+    - 42901
+    - 42902
+    - 50001
+    - 50002
+    - 50003
+    - 50004
+    - 50005
+    - 40002
+    type: integer
+    x-enum-varnames:
+    - Success
+    - ValidationError
+    - AuthError
+    - ForbiddenError
+    - NotFoundError
+    - LimiterError
+    - OtpLimiterError
+    - CustomRecovery
+    - InternalError
+    - InvalidInputError
+    - DatabaseError
+    - UnknownError
+    - BadRequest
+info:
+  contact: {}
+paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: LoginByUsername
+      parameters:
+      - description: LoginByUsernameRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_auth_api_dto.LoginByUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "401":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      summary: LoginByUsername
+      tags:
+      - Account
+  /v1/auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: RefreshToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "401":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      summary: RefreshToken
+      tags:
+      - Account
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: RegisterByUsername
+      parameters:
+      - description: RegisterUserByUsernameRequest
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_auth_api_dto.RegisterUserByUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "400":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+        "409":
+          description: Failed
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      summary: RegisterByUsername
+      tags:
+      - Account
+securityDefinitions:
+  AuthBearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
