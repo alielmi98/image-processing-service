@@ -28,3 +28,13 @@ jwt:
   accessTokenExpireDuration: 1440
   refreshTokenExpireDuration: 1440
 
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: admin
+  password: password
+  vhost: /
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
