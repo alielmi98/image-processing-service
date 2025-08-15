@@ -68,20 +68,20 @@ func (r *BaseRepository[T]) GetByID(ctx context.Context, id int) (*T, error) {
 func (r *BaseRepository[T]) GetAll(ctx context.Context, offset, limit int) ([]T, error) {
 	var entities []T
 	query := r.db.WithContext(ctx)
-	
+
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
-	
+
 	if err := query.Find(&entities).Error; err != nil {
 		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, err.Error())
 		return nil, err
 	}
-	
+
 	return entities, nil
 }
 
