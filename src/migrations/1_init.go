@@ -5,6 +5,8 @@ import (
 
 	"github.com/alielmi98/image-processing-service/constants"
 	"github.com/alielmi98/image-processing-service/internal/auth/domain/models"
+	userModels "github.com/alielmi98/image-processing-service/internal/auth/domain/models"
+	imageModels "github.com/alielmi98/image-processing-service/internal/image/domain/models"
 	"github.com/alielmi98/image-processing-service/pkg/db"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -22,9 +24,14 @@ func createTables(database *gorm.DB) {
 	tables := []interface{}{}
 
 	// User
-	tables = addNewTable(database, models.User{}, tables)
-	tables = addNewTable(database, models.Role{}, tables)
-	tables = addNewTable(database, models.UserRole{}, tables)
+	tables = addNewTable(database, userModels.User{}, tables)
+	tables = addNewTable(database, userModels.Role{}, tables)
+	tables = addNewTable(database, userModels.UserRole{}, tables)
+
+	// Image
+	tables = addNewTable(database, imageModels.Image{}, tables)
+	tables = addNewTable(database, imageModels.ProcessingJob{}, tables)
+	tables = addNewTable(database, imageModels.ProcessingResult{}, tables)
 
 	err := database.Migrator().CreateTable(tables...)
 	if err != nil {
