@@ -38,3 +38,8 @@ rabbitmq:
   maxIdleConns: 15
   maxOpenConns: 100
   connMaxLifetime: 5
+  processingRoutingKey: process
+  resultRoutingKey: result
+  prefetchCount: 1
+  reconnectDelay: 5
+  maxReconnectAttempts: 10
