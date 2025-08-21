@@ -27,3 +27,20 @@ jwt:
   refreshSecret: "mySecretKey"
   accessTokenExpireDuration: 60
   refreshTokenExpireDuration: 1440
+
+
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: admin
+  password: password
+  vhost: /
+  sslMode: disable
+  maxIdleConns: 15
+  maxOpenConns: 100
+  connMaxLifetime: 5
+  processingRoutingKey: process
+  resultRoutingKey: result
+  prefetchCount: 1
+  reconnectDelay: 5
+  maxReconnectAttempts: 10

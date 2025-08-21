@@ -4,12 +4,16 @@ go 1.22.2
 
 require (
 	github.com/didip/tollbooth v4.0.2+incompatible
+	github.com/disintegration/imaging v1.6.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.20.1
+	github.com/streadway/amqp v1.1.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.6
+	golang.org/x/crypto v0.32.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.1
 )
@@ -61,7 +65,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect

@@ -46,3 +46,15 @@ func CloseDb() {
 	con, _ := dbClient.DB()
 	con.Close()
 }
+
+type PreloadEntity struct {
+	Entity string
+}
+
+// Preload
+func Preload(db *gorm.DB, preloads []PreloadEntity) *gorm.DB {
+	for _, item := range preloads {
+		db = db.Preload(item.Entity)
+	}
+	return db
+}

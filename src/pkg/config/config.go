@@ -58,15 +58,20 @@ type JWTConfig struct {
 }
 
 type RabbitMQConfig struct {
-	Host            string
-	Port            string
-	User            string
-	Password        string
-	VHost           string
-	SSLMode         string
-	MaxIdleConns    int
-	MaxOpenConns    int
-	ConnMaxLifetime time.Duration
+	Host                 string
+	Port                 string
+	User                 string
+	Password             string
+	VHost                string
+	SSLMode              string
+	MaxIdleConns         int
+	MaxOpenConns         int
+	ConnMaxLifetime      time.Duration
+	ProcessingRoutingKey string
+	ResultRoutingKey     string
+	PrefetchCount        int
+	ReconnectDelay       time.Duration
+	MaxReconnectAttempts int
 }
 
 func GetConfig() *Config {

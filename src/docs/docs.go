@@ -141,6 +141,112 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/images/": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Create an image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Create an image",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Image file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image response",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/processing": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Create an image processing job",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Processing"
+                ],
+                "summary": "Create an image processing job",
+                "parameters": [
+                    {
+                        "description": "Processing request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Processing response",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -191,6 +297,84 @@ const docTemplate = `{
                     "minLength": 5
                 }
             }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest": {
+            "type": "object",
+            "required": [
+                "image_id",
+                "parameters",
+                "processing_type"
+            ],
+            "properties": {
+                "image_id": {
+                    "type": "integer"
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "processing_type": {
+                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType"
+                }
+            }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse": {
+            "type": "object",
+            "properties": {
+                "file-name": {
+                    "type": "string"
+                },
+                "file-path": {
+                    "type": "string"
+                },
+                "file-size": {
+                    "type": "integer"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mime-type": {
+                    "type": "string"
+                },
+                "original-name": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType": {
+            "type": "string",
+            "enum": [
+                "resize",
+                "crop",
+                "rotate",
+                "filter",
+                "watermark",
+                "compress",
+                "format"
+            ],
+            "x-enum-varnames": [
+                "ProcessingTypeResize",
+                "ProcessingTypeCrop",
+                "ProcessingTypeRotate",
+                "ProcessingTypeFilter",
+                "ProcessingTypeWatermark",
+                "ProcessingTypeCompress",
+                "ProcessingTypeFormat"
+            ]
         },
         "github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse": {
             "type": "object",
