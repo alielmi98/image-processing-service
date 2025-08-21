@@ -2,108 +2,106 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"time"
 
+	"github.com/alielmi98/image-processing-service/common"
 	"github.com/alielmi98/image-processing-service/constants"
+	"github.com/alielmi98/image-processing-service/pkg/config"
+	"github.com/alielmi98/image-processing-service/pkg/db"
+	"github.com/alielmi98/image-processing-service/pkg/service_errors"
 	"gorm.io/gorm"
 )
 
-// BaseRepository provides common CRUD operations for all entities
-type BaseRepository[T any] struct {
-	db *gorm.DB
+const softDeleteExp string = "id = ? and deleted_by is null"
+
+type BaseRepository[TEntity any] struct {
+	database *gorm.DB
+	preloads []db.PreloadEntity
 }
 
-// NewBaseRepository creates a new base repository instance
-func NewBaseRepository[T any](db *gorm.DB) *BaseRepository[T] {
-	return &BaseRepository[T]{db: db}
+func NewBaseRepository[TEntity any](cfg *config.Config, db *gorm.DB, preloads []db.PreloadEntity) *BaseRepository[TEntity] {
+	return &BaseRepository[TEntity]{
+		database: db,
+		preloads: preloads,
+	}
 }
 
-// Create creates a new entity
-func (r *BaseRepository[T]) Create(ctx context.Context, entity *T) error {
-	tx := r.db.WithContext(ctx).Begin()
-	if err := tx.Create(entity).Error; err != nil {
+func (r BaseRepository[TEntity]) Create(ctx context.Context, entity TEntity) (TEntity, error) {
+	tx := r.database.WithContext(ctx).Begin()
+	err := tx.
+		Create(&entity).
+		Error
+	if err != nil {
 		tx.Rollback()
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Rollback, err.Error())
-		return err
+		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Insert, err.Error())
+		return entity, err
 	}
 	tx.Commit()
+
+	return entity, nil
+}
+
+func (r BaseRepository[TEntity]) Update(ctx context.Context, id int, entity map[string]interface{}) (TEntity, error) {
+	snakeMap := map[string]interface{}{}
+	for k, v := range entity {
+		snakeMap[common.ToSnakeCase(k)] = v
+	}
+	snakeMap["modified_by"] = &sql.NullInt64{Int64: int64(ctx.Value(constants.UserIdKey).(float64)), Valid: true}
+	snakeMap["modified_at"] = sql.NullTime{Valid: true, Time: time.Now().UTC()}
+	model := new(TEntity)
+	tx := r.database.WithContext(ctx).Begin()
+	if err := tx.Model(model).
+		Where(softDeleteExp, id).
+		Updates(snakeMap).
+		Error; err != nil {
+		tx.Rollback()
+		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Update, err.Error())
+		return *model, err
+	}
+	tx.Commit()
+	return *model, nil
+}
+
+func (r BaseRepository[TEntity]) Delete(ctx context.Context, id int) error {
+	tx := r.database.WithContext(ctx).Begin()
+
+	model := new(TEntity)
+
+	deleteMap := map[string]interface{}{
+		"deleted_by": &sql.NullInt64{Int64: int64(ctx.Value(constants.UserIdKey).(float64)), Valid: true},
+		"deleted_at": sql.NullTime{Valid: true, Time: time.Now().UTC()},
+	}
+
+	if ctx.Value(constants.UserIdKey) == nil {
+		return &service_errors.ServiceError{EndUserMessage: service_errors.PermissionDenied}
+	}
+	if cnt := tx.
+		Model(model).
+		Where(softDeleteExp, id).
+		Updates(deleteMap).
+		RowsAffected; cnt == 0 {
+		tx.Rollback()
+		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Update, service_errors.RecordNotFound)
+		return &service_errors.ServiceError{EndUserMessage: service_errors.RecordNotFound}
+	}
+	tx.Commit()
+	log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Update, "Success")
 	return nil
 }
 
-// Update updates an existing entity by ID
-func (r *BaseRepository[T]) Update(ctx context.Context, id int, entity *T) error {
-	tx := r.db.WithContext(ctx).Begin()
-	if err := tx.Model(new(T)).Where("id = ?", id).Updates(entity).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Rollback, err.Error())
-		return err
+func (r BaseRepository[TEntity]) GetById(ctx context.Context, id int) (TEntity, error) {
+	model := new(TEntity)
+	db := db.Preload(r.database, r.preloads)
+	err := db.
+		Where(softDeleteExp, id).
+		First(model).
+		Error
+	if err != nil {
+		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, "Failed")
+		return *model, err
 	}
-	tx.Commit()
-	return nil
-}
-
-// Delete soft deletes an entity by ID
-func (r *BaseRepository[T]) Delete(ctx context.Context, id int) error {
-	tx := r.db.WithContext(ctx).Begin()
-	if err := tx.Where("id = ?", id).Delete(new(T)).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Rollback, err.Error())
-		return err
-	}
-	tx.Commit()
-	return nil
-}
-
-// GetByID retrieves an entity by ID
-func (r *BaseRepository[T]) GetByID(ctx context.Context, id int) (*T, error) {
-	var entity T
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&entity).Error; err != nil {
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, err.Error())
-		return nil, err
-	}
-	return &entity, nil
-}
-
-// GetAll retrieves all entities with pagination
-func (r *BaseRepository[T]) GetAll(ctx context.Context, offset, limit int) ([]T, error) {
-	var entities []T
-	query := r.db.WithContext(ctx)
-
-	if offset > 0 {
-		query = query.Offset(offset)
-	}
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-
-	if err := query.Find(&entities).Error; err != nil {
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, err.Error())
-		return nil, err
-	}
-
-	return entities, nil
-}
-
-// Count returns the total count of entities
-func (r *BaseRepository[T]) Count(ctx context.Context) (int64, error) {
-	var count int64
-	if err := r.db.WithContext(ctx).Model(new(T)).Count(&count).Error; err != nil {
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, err.Error())
-		return 0, err
-	}
-	return count, nil
-}
-
-// Exists checks if an entity exists by a given condition
-func (r *BaseRepository[T]) Exists(ctx context.Context, condition string, args ...interface{}) (bool, error) {
-	var exists bool
-	if err := r.db.WithContext(ctx).Model(new(T)).
-		Select("count(*) > 0").
-		Where(condition, args...).
-		Find(&exists).Error; err != nil {
-		log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, err.Error())
-		return false, err
-	}
-	return exists, nil
+	log.Printf("Caller:%s Level:%s Msg:%s", constants.Postgres, constants.Select, "Success")
+	return *model, nil
 }

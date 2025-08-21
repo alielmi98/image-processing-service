@@ -34,6 +34,25 @@ definitions:
     - password
     - username
     type: object
+  github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse:
+    properties:
+      file-name:
+        type: string
+      file-path:
+        type: string
+      file-size:
+        type: integer
+      height:
+        type: integer
+      id:
+        type: integer
+      mime-type:
+        type: string
+      original-name:
+        type: string
+      width:
+        type: integer
+    type: object
   github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse:
     properties:
       error: {}
@@ -159,6 +178,36 @@ paths:
       summary: RegisterByUsername
       tags:
       - Account
+  /v1/images/:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create an image
+      parameters:
+      - description: Image file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        "201":
+          description: Image response
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Create an image
+      tags:
+      - Images
 securityDefinitions:
   AuthBearer:
     in: header

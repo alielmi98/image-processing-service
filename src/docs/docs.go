@@ -141,6 +141,58 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/images/": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Create an image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Create an image",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Image file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image response",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -189,6 +241,35 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "minLength": 5
+                }
+            }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse": {
+            "type": "object",
+            "properties": {
+                "file-name": {
+                    "type": "string"
+                },
+                "file-path": {
+                    "type": "string"
+                },
+                "file-size": {
+                    "type": "integer"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mime-type": {
+                    "type": "string"
+                },
+                "original-name": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
                 }
             }
         },

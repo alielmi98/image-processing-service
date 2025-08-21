@@ -7,6 +7,7 @@ import (
 	"github.com/alielmi98/image-processing-service/constants"
 	"github.com/alielmi98/image-processing-service/docs"
 	authRouter "github.com/alielmi98/image-processing-service/internal/auth/api/routers"
+	imageRouter "github.com/alielmi98/image-processing-service/internal/image/api/routers"
 	"github.com/alielmi98/image-processing-service/internal/middlewares"
 	migration "github.com/alielmi98/image-processing-service/migrations"
 	"github.com/alielmi98/image-processing-service/pkg/config"
@@ -54,6 +55,9 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		//Auth
 		auth := v1.Group("/auth")
 		authRouter.Auth(auth, cfg)
+		//Image
+		image := v1.Group("/images")
+		imageRouter.Image(image, cfg)
 	}
 
 }
