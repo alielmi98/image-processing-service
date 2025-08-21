@@ -34,6 +34,20 @@ definitions:
     - password
     - username
     type: object
+  github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest:
+    properties:
+      image_id:
+        type: integer
+      parameters:
+        additionalProperties: true
+        type: object
+      processing_type:
+        $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType'
+    required:
+    - image_id
+    - parameters
+    - processing_type
+    type: object
   github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse:
     properties:
       file-name:
@@ -53,6 +67,29 @@ definitions:
       width:
         type: integer
     type: object
+  github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse:
+    properties:
+      job_id:
+        type: integer
+    type: object
+  github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType:
+    enum:
+    - resize
+    - crop
+    - rotate
+    - filter
+    - watermark
+    - compress
+    - format
+    type: string
+    x-enum-varnames:
+    - ProcessingTypeResize
+    - ProcessingTypeCrop
+    - ProcessingTypeRotate
+    - ProcessingTypeFilter
+    - ProcessingTypeWatermark
+    - ProcessingTypeCompress
+    - ProcessingTypeFormat
   github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse:
     properties:
       error: {}
@@ -208,6 +245,37 @@ paths:
       summary: Create an image
       tags:
       - Images
+  /v1/processing:
+    post:
+      consumes:
+      - application/json
+      description: Create an image processing job
+      parameters:
+      - description: Processing request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest'
+      responses:
+        "201":
+          description: Processing response
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Create an image processing job
+      tags:
+      - Processing
 securityDefinitions:
   AuthBearer:
     in: header

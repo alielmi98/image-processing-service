@@ -193,6 +193,60 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/processing": {
+            "post": {
+                "security": [
+                    {
+                        "AuthBearer": []
+                    }
+                ],
+                "description": "Create an image processing job",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Processing"
+                ],
+                "summary": "Create an image processing job",
+                "parameters": [
+                    {
+                        "description": "Processing request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Processing response",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "result": {
+                                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -244,6 +298,26 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.CreateProcessImageRequest": {
+            "type": "object",
+            "required": [
+                "image_id",
+                "parameters",
+                "processing_type"
+            ],
+            "properties": {
+                "image_id": {
+                    "type": "integer"
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "processing_type": {
+                    "$ref": "#/definitions/github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType"
+                }
+            }
+        },
         "github_com_alielmi98_image-processing-service_internal_image_api_dto.ImageResponse": {
             "type": "object",
             "properties": {
@@ -272,6 +346,35 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_alielmi98_image-processing-service_internal_image_domain_models.ProcessingType": {
+            "type": "string",
+            "enum": [
+                "resize",
+                "crop",
+                "rotate",
+                "filter",
+                "watermark",
+                "compress",
+                "format"
+            ],
+            "x-enum-varnames": [
+                "ProcessingTypeResize",
+                "ProcessingTypeCrop",
+                "ProcessingTypeRotate",
+                "ProcessingTypeFilter",
+                "ProcessingTypeWatermark",
+                "ProcessingTypeCompress",
+                "ProcessingTypeFormat"
+            ]
         },
         "github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse": {
             "type": "object",

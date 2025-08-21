@@ -13,3 +13,11 @@ type ImageRepository interface {
 	DeleteImage(ctx context.Context, id int) error
 	GetImageByID(ctx context.Context, id int) (models.Image, error)
 }
+
+// ProcessingRepository defines the contract for processing job data operations
+type ProcessingRepository interface {
+	CreateProcessingJob(ctx context.Context, job models.ProcessingJob) (models.ProcessingJob, error)
+	UpdateProcessingJob(ctx context.Context, id int, job map[string]interface{}) (models.ProcessingJob, error)
+	DeleteProcessingJob(ctx context.Context, id int) error
+	GetProcessingJobByID(ctx context.Context, id int) (models.ProcessingJob, error)
+}

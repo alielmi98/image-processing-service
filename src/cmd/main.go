@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/alielmi98/image-processing-service/constants"
+	"github.com/alielmi98/image-processing-service/di"
 	"github.com/alielmi98/image-processing-service/docs"
 	authRouter "github.com/alielmi98/image-processing-service/internal/auth/api/routers"
 	imageRouter "github.com/alielmi98/image-processing-service/internal/image/api/routers"
@@ -39,7 +40,7 @@ func main() {
 func InitServer(cfg *config.Config) {
 	r := gin.New()
 
-	r.Use(middlewares.Cors(cfg), middlewares.LimitByRequest())
+	r.Use(middlewares.Cors(cfg))
 	RegisterRoutes(r, cfg)
 	RegisterSwagger(r, cfg)
 	log.Printf("Caller:%s Level:%s Msg:%s", constants.General, constants.Startup, "Started")
@@ -56,10 +57,17 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		auth := v1.Group("/auth")
 		authRouter.Auth(auth, cfg)
 		//Image
+		tokenProvider := di.GetTokenProvider(cfg)
 		image := v1.Group("/images")
+		image.Use(middlewares.Authentication(cfg, tokenProvider))
 		imageRouter.Image(image, cfg)
-	}
 
+		//Processing
+		processing := v1.Group("/processing")
+		processing.Use(middlewares.Authentication(cfg, tokenProvider))
+		imageRouter.Processing(processing, cfg)
+
+	}
 }
 
 func RegisterSwagger(r *gin.Engine, cfg *config.Config) {

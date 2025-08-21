@@ -29,7 +29,7 @@ jwt:
   refreshTokenExpireDuration: 1440
 
 rabbitmq:
-  host: rabbitmq
+  host: localhost
   port: 5672
   user: admin
   password: password

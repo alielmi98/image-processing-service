@@ -34,7 +34,7 @@ type RabbitMQClient struct {
 }
 
 type ImageProcessor interface {
-	ProcessImage(ctx context.Context, message *entity.ImageProcessingMessage) (*entity.ImageProcessingResult, error)
+	ProcessImage(ctx context.Context, message *entity.ProcessingMessage) (*entity.ProcessingResult, error)
 }
 
 func NewRabbitMQClient(config *RabbitMQConfig, processor ImageProcessor) *RabbitMQClient {
@@ -65,10 +65,12 @@ func (r *RabbitMQClient) Connect() error {
 		return err
 	}
 	
-	// Subscribe to processing queue
-	err = r.broker.Subscribe(r.config.ProcessingExchange, r.handleProcessingMessage)
-	if err != nil {
-		return fmt.Errorf("failed to subscribe to processing queue: %w", err)
+	// Only subscribe to processing queue if we have a processor
+	if r.processor != nil {
+		err = r.broker.Subscribe(r.config.ProcessingExchange, r.handleProcessingMessage)
+		if err != nil {
+			return fmt.Errorf("failed to subscribe to processing queue: %w", err)
+		}
 	}
 	
 	return nil
@@ -79,7 +81,7 @@ func (r *RabbitMQClient) StartConsumer() error {
 }
 
 func (r *RabbitMQClient) handleProcessingMessage(ctx context.Context, message *rabbitmq.Message) error {
-	var processingMsg entity.ImageProcessingMessage
+	var processingMsg entity.ProcessingMessage
 	
 	err := json.Unmarshal(message.Body, &processingMsg)
 	if err != nil {
@@ -95,7 +97,7 @@ func (r *RabbitMQClient) handleProcessingMessage(ctx context.Context, message *r
 		log.Printf("Failed to process image job %d: %v", processingMsg.JobId, err)
 		
 		// Create error result
-		result = &entity.ImageProcessingResult{
+		result = &entity.ProcessingResult{
 			JobId:        processingMsg.JobId,
 			ImageId:      processingMsg.ImageId,
 			UserId:       processingMsg.UserId,
@@ -116,7 +118,7 @@ func (r *RabbitMQClient) handleProcessingMessage(ctx context.Context, message *r
 	return nil
 }
 
-func (r *RabbitMQClient) publishResult(result *entity.ImageProcessingResult) error {
+func (r *RabbitMQClient) publishResult(result *entity.ProcessingResult) error {
 	body, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("failed to marshal result: %w", err)
@@ -135,7 +137,7 @@ func (r *RabbitMQClient) publishResult(result *entity.ImageProcessingResult) err
 	return r.broker.Publish(r.ctx, message)
 }
 
-func (r *RabbitMQClient) PublishProcessingJob(processingMsg *entity.ImageProcessingMessage) error {
+func (r *RabbitMQClient) PublishProcessingJob(processingMsg *entity.ProcessingMessage) error {
 	body, err := json.Marshal(processingMsg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %w", err)
