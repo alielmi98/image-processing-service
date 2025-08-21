@@ -58,6 +58,14 @@ func NewMessageSender(config *config.Config) (*MessageSender, error) {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
+	dummyHandler := func(ctx context.Context, msg *rabbitmq.Message) error {
+		return nil
+	}
+	if err := broker.Subscribe("image.processing", dummyHandler); err != nil {
+		cancel()
+		return nil, fmt.Errorf("failed to subscribe and create queue: %w", err)
+	}
+
 	return client, nil
 }
 
