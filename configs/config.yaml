@@ -1,0 +1,12 @@
+# RabbitMQ Configuration
+rabbitmq:
+  url: amqp://guest:guest@localhost:5672/
+  host: localhost
+  port: "5672"
+  username: guest
+  password: guest
+  vhost: "/"
+  queuename: "image_processing_queue"
+  prefetch_count: 10
+  reconnect_delay: 5s
+  max_reconnect_attempts: 10
