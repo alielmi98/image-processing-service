@@ -18,32 +18,8 @@ type MessageSender struct {
 	cancel context.CancelFunc
 }
 
-func NewMessageSender(config *config.Config) (*MessageSender, error) {
+func NewMessageSender(broker *rabbitmq.RabbitMQBroker, config *config.Config) (*MessageSender, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-
-	// Build connection URL
-	connectionURL := fmt.Sprintf("amqp://%s:%s@%s:%s/%s",
-		config.RabbitMQ.User,
-		config.RabbitMQ.Password,
-		config.RabbitMQ.Host,
-		config.RabbitMQ.Port,
-		config.RabbitMQ.VHost,
-	)
-
-	// Convert to rabbitmq.Config
-	rbConfig := &rabbitmq.Config{
-		URL:                  connectionURL,
-		Host:                 config.RabbitMQ.Host,
-		Port:                 config.RabbitMQ.Port,
-		Username:             config.RabbitMQ.User,
-		Password:             config.RabbitMQ.Password,
-		VHost:                config.RabbitMQ.VHost,
-		PrefetchCount:        config.RabbitMQ.PrefetchCount,
-		ReconnectDelay:       config.RabbitMQ.ReconnectDelay,
-		MaxReconnectAttempts: config.RabbitMQ.MaxReconnectAttempts,
-	}
-
-	broker := rabbitmq.NewRabbitMQBroker(rbConfig)
 
 	client := &MessageSender{
 		config: &config.RabbitMQ,
@@ -71,7 +47,7 @@ func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.Pro
 	// Create RabbitMQ message
 	rabbitMsg := &rabbitmq.Message{
 		ID:         fmt.Sprintf("job_%d", message.JobId),
-		Topic:      "image.processing",
+		Topic:      "job.result",
 		RoutingKey: ms.config.ProcessingRoutingKey,
 		Body:       messageBody,
 		Headers: map[string]interface{}{

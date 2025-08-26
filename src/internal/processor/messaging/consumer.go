@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/alielmi98/image-processing-service/internal/image/entity"
 	"github.com/alielmi98/image-processing-service/internal/processor/domain"
+	"github.com/alielmi98/image-processing-service/pkg/contracts"
 	"github.com/alielmi98/image-processing-service/pkg/rabbitmq"
 )
 
@@ -41,7 +41,7 @@ func (c *MessageConsumer) Start(topic string) error {
 
 	// Subscribe to the topic
 	err := c.broker.Subscribe(topic, func(ctx context.Context, msg *rabbitmq.Message) error {
-		var processingMsg entity.ProcessingMessage
+		var processingMsg contracts.ProcessingMessage
 		if err := json.Unmarshal(msg.Body, &processingMsg); err != nil {
 			log.Printf("Error unmarshaling message: %v", err)
 			return err
@@ -53,7 +53,7 @@ func (c *MessageConsumer) Start(topic string) error {
 			return err
 		}
 
-		log.Printf("Successfully processed image %d for user %d", 
+		log.Printf("Successfully processed image %d for user %d",
 			processingMsg.ImageId, processingMsg.UserId)
 		return nil
 	})
