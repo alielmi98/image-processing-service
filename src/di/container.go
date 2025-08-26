@@ -30,7 +30,7 @@ func GetImageRepository(cfg *config.Config) contractImageRepo.ImageRepository {
 }
 
 func GetProcessingRepository(cfg *config.Config) contractImageRepo.ProcessingRepository {
-	var preloads []db.PreloadEntity = []db.PreloadEntity{}
+	var preloads []db.PreloadEntity = []db.PreloadEntity{{Entity: "Image"}}
 	return infraImageRepo.NewProcessingRepository(cfg, preloads)
 }
 

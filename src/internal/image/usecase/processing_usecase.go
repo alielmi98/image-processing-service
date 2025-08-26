@@ -55,7 +55,7 @@ func (uc *ProcessingUsecase) SendProcessingMessage(ctx context.Context, job *mod
 		ProcessingType: messaging.ToContractProcessingType(job.ProcessingType),
 		Parameters:     job.Parameters,
 		UserId:         userId,
-		SourcePath:     "/uploads",
+		SourcePath:     job.Image.FilePath + "/" + job.Image.FileName,
 		DestinationDir: "/uploads/processed",
 		Priority:       1,
 		Timestamp:      time.Now(),
