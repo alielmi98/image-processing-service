@@ -33,7 +33,6 @@ type ProcessingMessage struct {
 	ProcessingType ProcessingType         `json:"processing_type"`
 	Parameters     map[string]interface{} `json:"parameters"`
 	SourcePath     string                 `json:"source_path"`
-	DestinationDir string                 `json:"destination_dir"`
 	Priority       int                    `json:"priority"` // 1-10, higher is more priority
 	Timestamp      time.Time              `json:"timestamp"`
 	RetryCount     int                    `json:"retry_count"`

@@ -48,12 +48,12 @@ func (c *MessageConsumer) Start(topic string) error {
 		}
 
 		// Process the image
-		if err := c.service.ProcessImage(processingMsg); err != nil {
+		if _, err := c.service.ProcessImage(processingMsg); err != nil {
 			log.Printf("Error processing image: %v", err)
 			return err
 		}
 
-		log.Printf("Successfully processed image %d for user %d",
+		log.Printf("Successfully Processed image %d for user %d",
 			processingMsg.ImageId, processingMsg.UserId)
 		return nil
 	})

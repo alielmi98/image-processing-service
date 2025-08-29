@@ -32,10 +32,15 @@ func (uc *ProcessingUsecase) CreateProcessingJob(ctx context.Context, req dto.Pr
 	// Map DTO to domain model
 	entity, _ := common.TypeConverter[models.ProcessingJob](req)
 	// Call repository to save image
-	processingJob, err := uc.repo.CreateProcessingJob(ctx, entity)
+	job, err := uc.repo.CreateProcessingJob(ctx, entity)
 	if err != nil {
 		return dto.ProcessingResponse{}, err
 	}
+	processingJob, err := uc.repo.GetProcessingJobByID(ctx, job.Id)
+	if err != nil {
+		return dto.ProcessingResponse{}, err
+	}
+
 	err = uc.SendProcessingMessage(ctx, &processingJob)
 	if err != nil {
 		return dto.ProcessingResponse{}, err
@@ -55,8 +60,7 @@ func (uc *ProcessingUsecase) SendProcessingMessage(ctx context.Context, job *mod
 		ProcessingType: messaging.ToContractProcessingType(job.ProcessingType),
 		Parameters:     job.Parameters,
 		UserId:         userId,
-		SourcePath:     job.Image.FilePath + "/" + job.Image.FileName,
-		DestinationDir: "/uploads/processed",
+		SourcePath:     "../" + job.Image.FilePath + "/" + job.Image.FileName,
 		Priority:       1,
 		Timestamp:      time.Now(),
 		RetryCount:     0,

@@ -48,7 +48,7 @@ func main() {
 	}
 
 	// Initialize processor service
-	service := processor.NewProcessor()
+	service := processor.NewProcessor("processed")
 
 	// Create message consumer
 	consumer := messaging.NewMessageConsumer(broker, service)
