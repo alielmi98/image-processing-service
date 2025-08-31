@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/alielmi98/image-processing-service/internal/image/entity"
 	"github.com/alielmi98/image-processing-service/pkg/config"
+	"github.com/alielmi98/image-processing-service/pkg/contracts"
 	"github.com/alielmi98/image-processing-service/pkg/rabbitmq"
 )
 
@@ -58,18 +58,10 @@ func NewMessageSender(config *config.Config) (*MessageSender, error) {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
-	dummyHandler := func(ctx context.Context, msg *rabbitmq.Message) error {
-		return nil
-	}
-	if err := broker.Subscribe("image.processing", dummyHandler); err != nil {
-		cancel()
-		return nil, fmt.Errorf("failed to subscribe and create queue: %w", err)
-	}
-
 	return client, nil
 }
 
-func (ms *MessageSender) SendMessage(ctx context.Context, message *entity.ProcessingMessage) error {
+func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.ProcessingMessage) error {
 	// Marshal message to JSON
 	messageBody, err := json.Marshal(message)
 	if err != nil {

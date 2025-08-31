@@ -325,7 +325,7 @@ func (r *RabbitMQBroker) consume(ctx context.Context, topic string, handler Mess
 			// Handle message
 			if err := handler(ctx, rabbitMsg); err != nil {
 				log.Printf("Error handling message: %v", err)
-				msg.Nack(false, true) // Requeue on error
+				msg.Nack(false, false) // Requeue on error
 			} else {
 				msg.Ack(false)
 			}

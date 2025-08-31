@@ -8,10 +8,10 @@ import (
 	"github.com/alielmi98/image-processing-service/constants"
 	"github.com/alielmi98/image-processing-service/internal/image/domain/models"
 	"github.com/alielmi98/image-processing-service/internal/image/domain/repository"
-	"github.com/alielmi98/image-processing-service/internal/image/entity"
 	"github.com/alielmi98/image-processing-service/internal/image/infra/messaging"
 	"github.com/alielmi98/image-processing-service/internal/image/usecase/dto"
 	"github.com/alielmi98/image-processing-service/pkg/config"
+	"github.com/alielmi98/image-processing-service/pkg/contracts"
 )
 
 type ProcessingUsecase struct {
@@ -32,10 +32,15 @@ func (uc *ProcessingUsecase) CreateProcessingJob(ctx context.Context, req dto.Pr
 	// Map DTO to domain model
 	entity, _ := common.TypeConverter[models.ProcessingJob](req)
 	// Call repository to save image
-	processingJob, err := uc.repo.CreateProcessingJob(ctx, entity)
+	job, err := uc.repo.CreateProcessingJob(ctx, entity)
 	if err != nil {
 		return dto.ProcessingResponse{}, err
 	}
+	processingJob, err := uc.repo.GetProcessingJobByID(ctx, job.Id)
+	if err != nil {
+		return dto.ProcessingResponse{}, err
+	}
+
 	err = uc.SendProcessingMessage(ctx, &processingJob)
 	if err != nil {
 		return dto.ProcessingResponse{}, err
@@ -49,14 +54,13 @@ func (uc *ProcessingUsecase) CreateProcessingJob(ctx context.Context, req dto.Pr
 
 func (uc *ProcessingUsecase) SendProcessingMessage(ctx context.Context, job *models.ProcessingJob) error {
 	userId := int(ctx.Value(constants.UserIdKey).(float64))
-	message := &entity.ProcessingMessage{
+	message := &contracts.ProcessingMessage{
 		JobId:          job.Id,
 		ImageId:        job.ImageId,
-		ProcessingType: job.ProcessingType,
+		ProcessingType: messaging.ToContractProcessingType(job.ProcessingType),
 		Parameters:     job.Parameters,
 		UserId:         userId,
-		SourcePath:     "/uploads",
-		DestinationDir: "/uploads/processed",
+		SourcePath:     "../" + job.Image.FilePath + "/" + job.Image.FileName,
 		Priority:       1,
 		Timestamp:      time.Now(),
 		RetryCount:     0,
@@ -69,6 +73,6 @@ func (uc *ProcessingUsecase) SendProcessingMessage(ctx context.Context, job *mod
 	return uc.messaging.SendMessage(ctx, message)
 }
 
-func (uc *ProcessingUsecase) HandleProcessingResult(ctx context.Context, result *entity.ProcessingResult) error {
+func (uc *ProcessingUsecase) HandleProcessingResult(ctx context.Context, result *contracts.ProcessingResult) error {
 	return nil
 }

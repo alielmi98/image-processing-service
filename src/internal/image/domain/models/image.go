@@ -2,6 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -53,16 +56,39 @@ type Image struct {
 	DeletedBy  *sql.NullInt64 `gorm:"null"`
 }
 
+type JSONMap map[string]interface{}
+
+func (j *JSONMap) Scan(value interface{}) error {
+	if value == nil {
+		*j = nil
+		return nil
+	}
+
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan JSONMap: %v", value)
+	}
+
+	return json.Unmarshal(bytes, j)
+}
+
+func (j JSONMap) Value() (driver.Value, error) {
+	if j == nil {
+		return nil, nil
+	}
+	return json.Marshal(j)
+}
+
 // ProcessingJob represents a processing job for an image
 type ProcessingJob struct {
-	Id             int                    `gorm:"primarykey"`
-	ImageId        int                    `gorm:"not null;index"`
-	Image          Image                  `gorm:"foreignKey:ImageId;constraint:OnUpdate:NO ACTION;OnDelete:CASCADE"`
-	ProcessingType ProcessingType         `gorm:"type:varchar(50);not null"`
-	Parameters     map[string]interface{} `gorm:"type:jsonb"` // JSON parameters for the processing operation
-	Status         ImageStatus            `gorm:"type:varchar(20);not null;default:'pending'"`
-	ResultPath     sql.NullString         `gorm:"type:text;null"`
-	ErrorMessage   sql.NullString         `gorm:"type:text;null"`
+	Id             int            `gorm:"primarykey"`
+	ImageId        int            `gorm:"not null;index"`
+	Image          Image          `gorm:"foreignKey:ImageId;constraint:OnUpdate:NO ACTION;OnDelete:CASCADE"`
+	ProcessingType ProcessingType `gorm:"type:varchar(50);not null"`
+	Parameters     JSONMap        `gorm:"type:jsonb"` // JSON parameters for the processing operation
+	Status         ImageStatus    `gorm:"type:varchar(20);not null;default:'pending'"`
+	ResultPath     sql.NullString `gorm:"type:text;null"`
+	ErrorMessage   sql.NullString `gorm:"type:text;null"`
 
 	// Processing metrics
 	StartedAt   sql.NullTime  `gorm:"type:TIMESTAMP with time zone;null"`

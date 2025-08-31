@@ -22,4 +22,6 @@ go.work
 
 
 
+
 */cmd/uploads
+*/cmd/processor/processed

@@ -78,7 +78,15 @@ func GetConfig() *Config {
 	cfgPath := getConfigPath(os.Getenv("APP_ENV"))
 	v, err := LoadConfig(cfgPath, "yml")
 	if err != nil {
-		log.Fatalf("Error in load config %v", err)
+		log.Printf("failed to load config from %s: %v", cfgPath, err)
+
+		fallbackPath := "../../pkg/config/config-development"
+		log.Printf("trying fallback config: %s", fallbackPath)
+
+		v, err = LoadConfig(fallbackPath, "yml")
+		if err != nil {
+			log.Fatalf("Error loading fallback config %s: %v", fallbackPath, err)
+		}
 	}
 
 	cfg, err := ParseConfig(v)

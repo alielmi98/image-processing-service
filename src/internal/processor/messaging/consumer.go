@@ -1,0 +1,79 @@
+package messaging
+
+import (
+	"context"
+	"encoding/json"
+	"log"
+
+	"github.com/alielmi98/image-processing-service/internal/processor/domain"
+	"github.com/alielmi98/image-processing-service/pkg/contracts"
+	"github.com/alielmi98/image-processing-service/pkg/rabbitmq"
+)
+
+// MessageConsumer handles RabbitMQ message consumption for image processing
+type MessageConsumer struct {
+	broker  *rabbitmq.RabbitMQBroker
+	service domain.ProcessorService
+	sender *MessageSender
+	ctx     context.Context
+	cancel  context.CancelFunc
+}
+
+// NewMessageConsumer creates a new RabbitMQ message consumer
+func NewMessageConsumer(broker *rabbitmq.RabbitMQBroker, service domain.ProcessorService,sender *MessageSender) *MessageConsumer {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	return &MessageConsumer{
+		broker:  broker,
+		service: service,
+		sender: sender,
+		ctx:     ctx,
+		cancel:  cancel,
+	}
+}
+
+// Start starts consuming messages from RabbitMQ
+func (c *MessageConsumer) Start(topic string) error {
+	// Connect to RabbitMQ if not already connected
+	if !c.broker.IsConnected() {
+		if err := c.broker.Connect(); err != nil {
+			return err
+		}
+	}
+
+	// Subscribe to the topic
+	err := c.broker.Subscribe(topic, func(ctx context.Context, msg *rabbitmq.Message) error {
+		var processingMsg contracts.ProcessingMessage
+		if err := json.Unmarshal(msg.Body, &processingMsg); err != nil {
+			log.Printf("Error unmarshaling message: %v", err)
+			return err
+		}
+
+		// Process the image
+		result, err := c.service.ProcessImage(processingMsg)
+		if err != nil {
+			log.Printf("Error processing image: %v", err)
+			return err
+		}
+		log.Printf("Successfully Processed image %d for user %d",
+			processingMsg.ImageId, processingMsg.UserId)
+		if err := c.sender.SendMessage(c.ctx, result); err != nil {
+			log.Printf("Error sending result message: %v", err)
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Start consuming messages
+	return c.broker.Start(c.ctx)
+}
+
+// Stop stops the message consumer
+func (c *MessageConsumer) Stop() error {
+	c.cancel()
+	return c.broker.Stop()
+}
