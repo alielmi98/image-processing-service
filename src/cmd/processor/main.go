@@ -50,8 +50,13 @@ func main() {
 	// Initialize processor service
 	service := processor.NewProcessor("processed")
 
+	// Create message sender
+	sender := messaging.NewMessageSender(cfg, broker)
+
 	// Create message consumer
-	consumer := messaging.NewMessageConsumer(broker, service)
+	consumer := messaging.NewMessageConsumer(broker, service,sender)
+
+
 
 	// Create a context that cancels on interrupt signal
 	_, cancel := context.WithCancel(context.Background())

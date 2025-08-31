@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/alielmi98/image-processing-service/pkg/config"
 	"github.com/alielmi98/image-processing-service/pkg/contracts"
@@ -12,32 +13,23 @@ import (
 )
 
 type MessageSender struct {
-	config *config.RabbitMQConfig
 	broker *rabbitmq.RabbitMQBroker
 	ctx    context.Context
 	cancel context.CancelFunc
+	config *config.RabbitMQConfig
 }
 
-func NewMessageSender(broker *rabbitmq.RabbitMQBroker, config *config.Config) (*MessageSender, error) {
+func NewMessageSender(config *config.Config, broker *rabbitmq.RabbitMQBroker) *MessageSender {
 	ctx, cancel := context.WithCancel(context.Background())
-
-	client := &MessageSender{
-		config: &config.RabbitMQ,
+	return  &MessageSender{
 		broker: broker,
 		ctx:    ctx,
 		cancel: cancel,
+		config: &config.RabbitMQ,
 	}
-
-	// Connect to RabbitMQ
-	if err := broker.Connect(); err != nil {
-		cancel()
-		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
-	}
-
-	return client, nil
 }
 
-func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.ProcessingMessage) error {
+func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.ProcessingResult) error {
 	// Marshal message to JSON
 	messageBody, err := json.Marshal(message)
 	if err != nil {
@@ -47,8 +39,8 @@ func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.Pro
 	// Create RabbitMQ message
 	rabbitMsg := &rabbitmq.Message{
 		ID:         fmt.Sprintf("job_%d", message.JobId),
-		Topic:      "job.result",
-		RoutingKey: ms.config.ProcessingRoutingKey,
+		Topic:      "image.result",
+		RoutingKey: ms.config.ResultRoutingKey,
 		Body:       messageBody,
 		Headers: map[string]interface{}{
 			"content_type": "application/json",
@@ -57,18 +49,18 @@ func (ms *MessageSender) SendMessage(ctx context.Context, message *contracts.Pro
 			"user_id":      message.UserId,
 		},
 		Priority:   5, // Default priority
-		Timestamp:  message.Timestamp,
-		RetryCount: message.RetryCount,
-		MaxRetries: message.MaxRetries,
+		Timestamp:  time.Now(),
+		RetryCount: 0,
+		MaxRetries: 3,
 	}
 
 	// Publish message
 	err = ms.broker.Publish(ctx, rabbitMsg)
 	if err != nil {
-		return fmt.Errorf("failed to publish processing message: %w", err)
+		return fmt.Errorf("failed to publish result message: %w", err)
 	}
 
-	log.Printf("Sent processing message for job %d", message.JobId)
+	log.Printf("Sent result message for job %d", message.JobId)
 	return nil
 }
 

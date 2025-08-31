@@ -14,17 +14,19 @@ import (
 type MessageConsumer struct {
 	broker  *rabbitmq.RabbitMQBroker
 	service domain.ProcessorService
+	sender *MessageSender
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
 // NewMessageConsumer creates a new RabbitMQ message consumer
-func NewMessageConsumer(broker *rabbitmq.RabbitMQBroker, service domain.ProcessorService) *MessageConsumer {
+func NewMessageConsumer(broker *rabbitmq.RabbitMQBroker, service domain.ProcessorService,sender *MessageSender) *MessageConsumer {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &MessageConsumer{
 		broker:  broker,
 		service: service,
+		sender: sender,
 		ctx:     ctx,
 		cancel:  cancel,
 	}
@@ -48,13 +50,17 @@ func (c *MessageConsumer) Start(topic string) error {
 		}
 
 		// Process the image
-		if _, err := c.service.ProcessImage(processingMsg); err != nil {
+		result, err := c.service.ProcessImage(processingMsg)
+		if err != nil {
 			log.Printf("Error processing image: %v", err)
 			return err
 		}
-
 		log.Printf("Successfully Processed image %d for user %d",
 			processingMsg.ImageId, processingMsg.UserId)
+		if err := c.sender.SendMessage(c.ctx, result); err != nil {
+			log.Printf("Error sending result message: %v", err)
+			return err
+		}
 		return nil
 	})
 
