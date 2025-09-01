@@ -86,7 +86,7 @@ func (p *Processor) ProcessImage(message contracts.ProcessingMessage) (*contract
 		ResultPath:  outputPath,
 		Metadata:    metadata,
 		Duration:    duration,
-		ProcessedAt: time.Now(),
+		CompletedAt: time.Now(),
 	}
 
 	return result, nil

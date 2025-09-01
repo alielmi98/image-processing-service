@@ -28,7 +28,7 @@ func (r *ImagePgRepository) CreateImage(ctx context.Context, image models.Image)
 	return r.Create(ctx, image)
 }
 
-func (r *ImagePgRepository) UpdateImage(ctx context.Context, id int, image map[string]interface{}) (models.Image, error) {
+func (r *ImagePgRepository) UpdateImage(ctx context.Context, id int, image models.Image) (models.Image, error) {
 	return r.Update(ctx, id, image)
 }
 

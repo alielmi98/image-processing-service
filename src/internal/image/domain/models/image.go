@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/alielmi98/image-processing-service/constants"
+	"gorm.io/gorm"
 )
 
 // ImageStatus represents the status of image processing
@@ -104,22 +107,24 @@ type ProcessingJob struct {
 	DeletedBy  *sql.NullInt64 `gorm:"null"`
 }
 
-// ProcessingResult represents the result of an image processing operation
-type ProcessingResult struct {
-	Id              int           `gorm:"primarykey"`
-	ProcessingJobId int           `gorm:"not null;unique;index"`
-	ProcessingJob   ProcessingJob `gorm:"foreignKey:ProcessingJobId;constraint:OnUpdate:NO ACTION;OnDelete:CASCADE"`
-	ResultPath      string        `gorm:"type:text;not null"`
-	FileSize        int64         `gorm:"not null"`
-	Width           int           `gorm:"not null"`
-	Height          int           `gorm:"not null"`
-	MimeType        string        `gorm:"type:varchar(100);not null"`
+func (m *ProcessingJob) BeforeCreate(tx *gorm.DB) (err error) {
+	value := tx.Statement.Context.Value(constants.UserIdKey)
+	var userId = -1
+	if value != nil {
+		userId = int(value.(float64))
+	}
+	m.CreatedAt = time.Now().UTC()
+	m.CreatedBy = userId
+	return
+}
 
-	CreatedAt  time.Time    `gorm:"type:TIMESTAMP with time zone;not null"`
-	ModifiedAt sql.NullTime `gorm:"type:TIMESTAMP with time zone;null"`
-	DeletedAt  sql.NullTime `gorm:"type:TIMESTAMP with time zone;null"`
-
-	CreatedBy  int            `gorm:"not null"`
-	ModifiedBy *sql.NullInt64 `gorm:"null"`
-	DeletedBy  *sql.NullInt64 `gorm:"null"`
+func (m *Image) BeforeCreate(tx *gorm.DB) (err error) {
+	value := tx.Statement.Context.Value(constants.UserIdKey)
+	var userId = -1
+	if value != nil {
+		userId = int(value.(float64))
+	}
+	m.CreatedAt = time.Now().UTC()
+	m.CreatedBy = userId
+	return
 }

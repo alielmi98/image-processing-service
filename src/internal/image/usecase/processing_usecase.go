@@ -2,25 +2,29 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/alielmi98/image-processing-service/common"
 	"github.com/alielmi98/image-processing-service/constants"
+	"github.com/alielmi98/image-processing-service/internal/image/domain/messaging"
 	"github.com/alielmi98/image-processing-service/internal/image/domain/models"
 	"github.com/alielmi98/image-processing-service/internal/image/domain/repository"
-	"github.com/alielmi98/image-processing-service/internal/image/infra/messaging"
 	"github.com/alielmi98/image-processing-service/internal/image/usecase/dto"
 	"github.com/alielmi98/image-processing-service/pkg/config"
 	"github.com/alielmi98/image-processing-service/pkg/contracts"
 )
 
+// Ensure ProcessingUsecase implements the ConsumerHandler interface
+var _ messaging.ConsumerHandler = (*ProcessingUsecase)(nil)
+
 type ProcessingUsecase struct {
 	cfg       *config.Config
 	repo      repository.ProcessingRepository
-	messaging *messaging.MessageSender
+	messaging messaging.MessageSender
 }
 
-func NewProcessingUseCase(cfg *config.Config, repo repository.ProcessingRepository, messaging *messaging.MessageSender) *ProcessingUsecase {
+func NewProcessingUseCase(cfg *config.Config, repo repository.ProcessingRepository, messaging messaging.MessageSender) *ProcessingUsecase {
 	return &ProcessingUsecase{
 		cfg:       cfg,
 		repo:      repo,
@@ -73,6 +77,26 @@ func (uc *ProcessingUsecase) SendProcessingMessage(ctx context.Context, job *mod
 	return uc.messaging.SendMessage(ctx, message)
 }
 
+func (uc *ProcessingUsecase) GetProcessingJobByID(ctx context.Context, id int) (models.ProcessingJob, error) {
+	return uc.repo.GetProcessingJobByID(ctx, id)
+}
+
 func (uc *ProcessingUsecase) HandleProcessingResult(ctx context.Context, result *contracts.ProcessingResult) error {
+	// Map contract to domain model
+	entity := models.ProcessingJob{
+		Status:       messaging.FromContractImageStatus(result.Status),
+		ResultPath:   sql.NullString{String: result.ResultPath, Valid: result.ResultPath != ""},
+		ErrorMessage: sql.NullString{String: result.ErrorMessage, Valid: result.ErrorMessage != ""},
+		StartedAt:    sql.NullTime{Time: result.StartedAt, Valid: result.StartedAt != time.Time{}},
+		CompletedAt:  sql.NullTime{Time: result.CompletedAt, Valid: result.CompletedAt != time.Time{}},
+		Duration:     sql.NullInt64{Int64: result.Duration, Valid: result.Duration != 0},
+		ModifiedAt:   sql.NullTime{Time: time.Now().UTC(), Valid: true},
+	}
+	id := result.JobId
+	// Call repository to update image processing job
+	_, err := uc.repo.UpdateProcessingJob(ctx, id, entity)
+	if err != nil {
+		return err
+	}
 	return nil
 }
