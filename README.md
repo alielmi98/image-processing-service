@@ -1,10 +1,12 @@
-# 🚀 Enterprise Image Processing Service
+# Enterprise Image Processing Service
 
 > **A high-performance, scalable Go-based microservice for asynchronous image processing with enterprise-grade features**
 
 [![Go Version](https://img.shields.io/badge/Go-1.22.2-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](docker/docker-compose.yml)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Message%20Broker-orange.svg)](https://www.rabbitmq.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue.svg)](https://www.postgresql.org/)
 [![API Docs](https://img.shields.io/badge/API-Swagger-orange.svg)](#api-documentation)
 
 **🔗 Project Source:** [roadmap.sh/projects/image-processing-service](https://roadmap.sh/projects/image-processing-service)  
