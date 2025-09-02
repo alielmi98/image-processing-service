@@ -21,7 +21,7 @@ type MessageSender struct {
 
 func NewMessageSender(config *config.Config, broker *rabbitmq.RabbitMQBroker) *MessageSender {
 	ctx, cancel := context.WithCancel(context.Background())
-	return  &MessageSender{
+	return &MessageSender{
 		broker: broker,
 		ctx:    ctx,
 		cancel: cancel,
