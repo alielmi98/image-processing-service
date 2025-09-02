@@ -31,7 +31,6 @@ func createTables(database *gorm.DB) {
 	// Image
 	tables = addNewTable(database, imageModels.Image{}, tables)
 	tables = addNewTable(database, imageModels.ProcessingJob{}, tables)
-	tables = addNewTable(database, imageModels.ProcessingResult{}, tables)
 
 	err := database.Migrator().CreateTable(tables...)
 	if err != nil {

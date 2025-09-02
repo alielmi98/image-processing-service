@@ -28,7 +28,7 @@ func (r *ProcessingRepository) CreateProcessingJob(ctx context.Context, job mode
 	return r.Create(ctx, job)
 }
 
-func (r *ProcessingRepository) UpdateProcessingJob(ctx context.Context, id int, job map[string]interface{}) (models.ProcessingJob, error) {
+func (r *ProcessingRepository) UpdateProcessingJob(ctx context.Context, id int, job models.ProcessingJob) (models.ProcessingJob, error) {
 	return r.Update(ctx, id, job)
 }
 

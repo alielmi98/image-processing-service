@@ -50,5 +50,5 @@ type ProcessingResult struct {
 	Metadata     map[string]interface{} `json:"metadata,omitempty"`
 	Duration     int64                  `json:"duration"` // Duration in milliseconds
 	StartedAt    time.Time              `json:"started_at"`
-	ProcessedAt  time.Time              `json:"processed_at"`
+	CompletedAt  time.Time              `json:"processed_at"`
 }

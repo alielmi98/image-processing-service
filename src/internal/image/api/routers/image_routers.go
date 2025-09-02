@@ -6,14 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Image(r *gin.RouterGroup, cfg *config.Config) {
-	handler := handlers.NewImageHandler(cfg)
+func Image(r *gin.RouterGroup, cfg *config.Config, handler *handlers.ImageHandler) {
 	r.POST("/", handler.Create)
 
 }
 
-func Processing(r *gin.RouterGroup, cfg *config.Config) {
-	handler := handlers.NewProcessingHandler(cfg)
-
+func Processing(r *gin.RouterGroup, cfg *config.Config, handler *handlers.ProcessingHandler) {
 	r.POST("/", handler.CreateProcessingJob)
+	r.GET("/:id", handler.GetProcessingJobByID)
 }

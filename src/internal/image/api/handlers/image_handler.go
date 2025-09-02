@@ -11,7 +11,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alielmi98/image-processing-service/di"
 	"github.com/alielmi98/image-processing-service/internal/image/api/dto"
 	"github.com/alielmi98/image-processing-service/internal/image/usecase"
 	"github.com/alielmi98/image-processing-service/pkg/config"
@@ -24,9 +23,9 @@ type ImageHandler struct {
 	usecase *usecase.ImageUsecase
 }
 
-func NewImageHandler(cfg *config.Config) *ImageHandler {
+func NewImageHandler(cfg *config.Config, usecase *usecase.ImageUsecase) *ImageHandler {
 	return &ImageHandler{
-		usecase: usecase.NewImageUsecase(cfg, di.GetImageRepository(cfg)),
+		usecase: usecase,
 	}
 }
 

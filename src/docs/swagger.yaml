@@ -276,6 +276,36 @@ paths:
       summary: Create an image processing job
       tags:
       - Processing
+  /v1/processing/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a processing job by ID
+      parameters:
+      - description: Processing job ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Processing response
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+            - properties:
+                result:
+                  $ref: '#/definitions/github_com_alielmi98_image-processing-service_internal_image_api_dto.ProcessImageResponse'
+              type: object
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/github_com_alielmi98_image-processing-service_pkg_helper.BaseHttpResponse'
+      security:
+      - AuthBearer: []
+      summary: Get a processing job by ID
+      tags:
+      - Processing
 securityDefinitions:
   AuthBearer:
     in: header
